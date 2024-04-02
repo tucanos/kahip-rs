@@ -1,0 +1,18 @@
+[workspace]
+members = [".", "kahip-sys"]
+
+[package]
+name = "kahip"
+version = "0.1.2"
+authors = ["Hubert Hirtz <hubert@hirtz.pm>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LIHPC-Computational-Geometry/kahip-rs"
+description = "Idiomatic wrapper for kahip, the serial graph partitioner and fill-reducing matrix orderer"
+categories = ["api-bindings", "mathematics"]
+keywords = ["graph", "mesh", "matrix", "partitioning", "ordering"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+kahip-sys = { version = "0.1", path = "kahip-sys" }
