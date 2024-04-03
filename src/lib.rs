@@ -33,7 +33,7 @@ pub struct Graph<'a> {
 
     /// The computational weights of the vertices.
     ///
-    /// Required size: ncon * (xadj.len()-1)
+    /// Required size: (xadj.len()-1)
     vwgt: Option<&'a mut [Idx]>,
 
     /// The weight of the edges.
@@ -48,9 +48,6 @@ impl<'a> Graph<'a> {
     /// # Panics
     ///
     /// This function panics if:
-    /// - any of the arrays have a length that cannot be hold by an [`Idx`], or
-    /// - `ncon` is not strictly greater than zero, or
-    /// - `nparts` is not strictly greater than zero, or
     /// - `xadj` is empty, or
     /// - the length of `adjncy` is different than the last element of `xadj`.
     ///
@@ -147,11 +144,11 @@ mod tests {
     use crate::{Graph, Mode};
     #[test]
     fn test() {
-        let mut xadj = vec![0, 1, 2];
-        let mut adjncy = vec![1, 0];
+        let mut xadj = vec![0, 2, 5, 7, 9, 12];
+        let mut adjncy = vec![1, 4, 0, 2, 4, 1, 3, 2, 4, 0, 1, 3];
 
         let (part, edgcut) =
-            Graph::new(&mut xadj, &mut adjncy).partition(2, 1e-3, false, 1234, Mode::Fast);
+            Graph::new(&mut xadj, &mut adjncy).partition(2, 0.03, true, 1234, Mode::Eco);
         println!("{:?} {:?}", part, edgcut);
     }
 }

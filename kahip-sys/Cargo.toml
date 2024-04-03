@@ -2,13 +2,7 @@
 name = "kahip-sys"
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
-repository = "https://github.com/KaHIP/KaHIP"
-description = "Raw FFI to KaHIP, the serial graph partitioner and fill-reducing matrix orderer"
-readme = "../README.md"
-categories = ["external-ffi-bindings", "mathematics"]
-keywords = ["graph", "mesh", "matrix", "partitioning", "ordering"]
-
+links = "kahip"
 
 [build-dependencies]
-bindgen = { version = "0.65" }
+bindgen = "0.69"

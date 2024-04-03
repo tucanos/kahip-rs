@@ -27,7 +27,6 @@ fn main() {
             .expect("Not an UTF-8 path");
         println!("cargo:rustc-link-search={}", lib_dir);
         #[cfg(target_os = "macos")]
-
         println!("cargo:rustc-link-arg=-Wl,-rpath,{}", lib_dir);
         #[cfg(target_os = "linux")]
         println!("cargo:rustc-link-arg=-Wl,-rpath,{}", lib_dir);
@@ -55,31 +54,4 @@ fn main() {
         .expect("Unable to generate bindings")
         .write_to_file("src/binding.rs")
         .expect("Couldn't write bindings!");
-
-    // let bindings = bindgen::builder()
-    //     .header("wrapper.h")
-    //     .allowlist_function("kaffpa.*")
-    //     .allowlist_function("process_mapping")
-    //     .allowlist_function("node_separator")
-    //     .allowlist_function("reduced_nd")
-    //     .allowlist_function("edge_partitioning")
-    //     .allowlist_var("FAST.*")
-    //     .allowlist_var("ECO.*")
-    //     .allowlist_var("STRONG.*")
-    //     .allowlist_var("MAPMODE_.*")
-    //     .generate()
-    //     .unwrap_or_else(|err| {
-    //         eprintln!("Failed to generate bindings to KaHIP: {err}");
-    //         process::exit(1);
-    //     });
-
-    // let out_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("bindings.rs");
-    // bindings.write_to_file(&out_path).unwrap_or_else(|err| {
-    //     eprintln!(
-    //         "Failed to write KaHIP bindings to {:?}: {}",
-    //         out_path.display(),
-    //         err,
-    //     );
-    //     process::exit(1);
-    // });
 }
