@@ -149,6 +149,8 @@ mod tests {
 
         let (part, edgcut) =
             Graph::new(&mut xadj, &mut adjncy).partition(2, 0.03, true, 1234, Mode::Eco);
-        println!("{:?} {:?}", part, edgcut);
+
+        assert_eq!(part, [0, 0, 1, 1, 0]);
+        assert_eq!(edgcut, 2);
     }
 }
