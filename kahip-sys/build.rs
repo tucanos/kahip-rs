@@ -14,6 +14,11 @@ fn main() {
         .into_os_string()
         .into_string()
         .expect("Not an UTF-8 path");
+    let kaminpar_h = include_dir
+        .join("ckaminpar.h")
+        .into_os_string()
+        .into_string()
+        .expect("Not an UTF-8 path");
     let lib_dir = match env::var("KAHIP_LIB_DIR") {
         Ok(x) => Some(PathBuf::from(x)),
         Err(_) => env::var("KAHIP_DIR")
@@ -36,16 +41,31 @@ fn main() {
         println!("cargo:rpath={}", lib_dir);
     }
     println!("cargo:rerun-if-changed={}", kahip_h);
+    println!("cargo:rerun-if-changed={}", kaminpar_h);
     println!("cargo:rustc-link-lib=kahip");
+    println!("cargo:rustc-link-lib=static=KaMinPar");
+    println!("cargo:rustc-link-lib=dylib=tbb");
+    println!("cargo:rustc-link-lib=dylib=tbbmalloc");
+    #[cfg(target_os = "linux")]
+    println!("cargo:rustc-link-lib=dylib=stdc++");
 
     bindgen::Builder::default()
+        // KaHIP 3.24 declares edge_partitioning with a C++ default argument.
+        // Parse as C++ to keep binding generation compatible across versions.
+        .clang_arg("-x")
+        .clang_arg("c++")
+        .clang_arg("-std=c++14")
         .header("stdbool.h")
         .header(kahip_h)
+        .header(kaminpar_h)
         .allowlist_function("kaffpa.*")
+        .allowlist_function("kaminpar_.*")
         .allowlist_function("process_mapping")
         .allowlist_function("node_separator")
         .allowlist_function("reduced_nd")
         .allowlist_function("edge_partitioning")
+        .allowlist_type("kaminpar_.*")
+        .allowlist_var("CKAMINPAR_VERSION_.*")
         .allowlist_var("FAST.*")
         .allowlist_var("ECO.*")
         .allowlist_var("STRONG.*")

@@ -1,3 +1,4 @@
 target/
 Cargo.lock
 binding.rs
+.cargo/config.toml
