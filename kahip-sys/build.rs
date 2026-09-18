@@ -62,7 +62,7 @@ fn main() {
         .allowlist_function("kaminpar_.*")
         .allowlist_function("process_mapping")
         .allowlist_function("node_separator")
-        .allowlist_function("reduced_nd")
+        .allowlist_function("reduced_nd.*")
         .allowlist_function("edge_partitioning")
         .allowlist_type("kaminpar_.*")
         .allowlist_var("CKAMINPAR_VERSION_.*")

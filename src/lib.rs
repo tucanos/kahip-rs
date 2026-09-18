@@ -167,6 +167,31 @@ impl<'a> KaHIPGraph<'a> {
             (part, edgecut.assume_init())
         }
     }
+
+    /// Compute a node ordering using KaHIP reduced nested dissection.
+    pub fn reduced_nd_ordering(
+        &mut self,
+        suppress_output: bool,
+        seed: Idx,
+        mode: KahipMode,
+    ) -> Vec<Idx> {
+        let mut n = self.xadj.len() as Idx - 1;
+        let mut ordering = vec![0; self.xadj.len() - 1];
+
+        unsafe {
+            m::reduced_nd(
+                &mut n as *mut Idx,
+                self.xadj.as_mut_ptr(),
+                self.adjncy.as_mut_ptr(),
+                suppress_output,
+                seed,
+                mode as Idx,
+                ordering.as_mut_ptr(),
+            );
+        }
+
+        ordering
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -383,5 +408,18 @@ mod tests {
         assert_eq!(part.len(), xadj.len() - 1);
         assert!(part.iter().all(|&p: &KaminparBlockId| p < 2));
         assert!(edgecut >= 0);
+    }
+
+    #[test]
+    fn test_kahip_reduced_nd_ordering() {
+        let mut xadj = vec![0, 2, 5, 7, 9, 12];
+        let mut adjncy = vec![1, 4, 0, 2, 4, 1, 3, 2, 4, 0, 1, 3];
+
+        let mut ordering =
+            KaHIPGraph::new(&mut xadj, &mut adjncy).reduced_nd_ordering(true, 1234, KahipMode::Eco);
+
+        assert_eq!(ordering.len(), xadj.len() - 1);
+        ordering.sort_unstable();
+        assert_eq!(ordering, [0, 1, 2, 3, 4]);
     }
 }
