@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: false
+
+      - name: Configure Fast APT Mirror
+        uses: vegardit/fast-apt-mirror.sh@v1
+
+      - name: Install system dependencies
+        uses: eclipse-score/apt-install@main
+        with:
+          packages: build-essential cmake git libtbb-dev
+
+      - id: toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          components: clippy, rustfmt
+          toolchain: stable
+
+      - run: rustup override set ${{ steps.toolchain.outputs.name }}
+
+      - name: Rust cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-stable-${{ hashFiles('**/Cargo.toml', '**/rust-toolchain.toml') }}
+          restore-keys: ${{ runner.os }}-cargo-stable-
+
+      - name: Build and install KaHIP
+        run: |
+          mkdir -p "$HOME/local"
+          git clone --recursive https://github.com/KaHIP/KaHIP
+          cmake -S KaHIP -B KaHIP/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$HOME/local" \
+            -DNOMPI=ON \
+            -DPARHIP=OFF
+          cmake --build KaHIP/build --parallel 2
+          cmake --install KaHIP/build
+
+      - name: Build and install KaMinPar
+        run: |
+          mkdir -p "$HOME/local"
+          git clone --recursive https://github.com/KaHIP/KaMinPar
+          cmake -S KaMinPar -B KaMinPar/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$HOME/local" \
+            -DKAMINPAR_BUILD_DISTRIBUTED=OFF \
+            -DKAMINPAR_BUILD_TESTS=OFF \
+            -DBUILD_TESTING=OFF
+          cmake --build KaMinPar/build --parallel 2
+          cmake --install KaMinPar/build
+
+      - name: Run clippy
+        run: |
+          export KAHIP_INCLUDE_DIR="$HOME/local/include"
+          export KAHIP_LIB_DIR="$HOME/local/lib"
+          export LD_LIBRARY_PATH="$HOME/local/lib:$HOME/local/lib64:${LD_LIBRARY_PATH}"
+          cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Run tests
+        run: |
+          export KAHIP_INCLUDE_DIR="$HOME/local/include"
+          export KAHIP_LIB_DIR="$HOME/local/lib"
+          export LD_LIBRARY_PATH="$HOME/local/lib:$HOME/local/lib64:${LD_LIBRARY_PATH}"
+          cargo test -q
